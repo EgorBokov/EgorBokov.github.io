@@ -12,12 +12,27 @@
         <span>{{ cards.length }}</span>
       </div>
     </div>
-    <v-btn
-      icon="mdi-plus"
-      variant="tonal"
-      class="mt-5"
-      color="white"
-      @click="isNewCardDialogOpen = true" />
+    <div>
+      <v-btn
+        icon="mdi-plus"
+        variant="tonal"
+        class="mt-5"
+        color="white"
+        @click="isNewCardDialogOpen = true" 
+      />
+      <v-tooltip :text="sortingType.sortData.title">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-sort"
+            variant="tonal"
+            class="sort-btn mt-5 ml-3"
+            color="blue"
+            @click="handleChangeSortByRate" 
+          />
+        </template>
+      </v-tooltip>
+    </div>
 
     <CardItem
       v-for="(card, index) in cards"
@@ -38,9 +53,37 @@
 </template>
 
 <script setup>
-  import { ref, inject } from 'vue';
+  import { ref, inject, reactive } from 'vue';
   import CardItem from './CardItem.vue';
   import CardForm from './CardForm.vue';
+
+  const staticSortingTypes = [
+    { value: 'default', title: 'По умолчанию', },
+    { value: 'increasing', title: 'По возрастанию', },
+    { value: 'decreasing', title: 'По убыванию', },
+  ];
+
+  const sortingType = reactive({ sortData: staticSortingTypes[0] });
+
+    
+  const handleChangeSortByRate = () => { 
+     switch (sortingType.sortData.value) { 
+      case 'default': 
+        sortingType.sortData = staticSortingTypes[1];
+        getLocalCards();
+        break;
+
+      case 'increasing': 
+        sortingType.sortData = staticSortingTypes[2];
+        cards.value = cards.value.sort((a, b) => b.rating.rate - a.rating.rate);
+        break;
+
+      case 'decreasing': 
+        sortingType.sortData = staticSortingTypes[0];
+        cards.value = cards.value.sort((a, b) => a.rating.rate - b.rating.rate);
+        break;
+     }
+  };
 
   const firstList = inject('firstList');
   const secondList = inject('secondList');
